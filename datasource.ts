@@ -5,19 +5,30 @@ import { ConfigService } from '@nestjs/config';
 config();
 
 const configService = new ConfigService();
-export const dataSourceOptions: DataSourceOptions = {
+export const appDataSourceOptions: DataSourceOptions = {
   type: 'postgres',
   host: configService.getOrThrow('DB_HOST'),
   username: configService.getOrThrow('DB_USERNAME'),
   password: configService.getOrThrow('DB_PASSWORD'),
   database: configService.getOrThrow('DB_DATABASE_NAME'),
   migrationsTableName: 'typeorm_migrations',
-  entities: ['dist/**/*.entity.js'],
-  migrations: ['dist/migrations/*.js'],
+  entities: [__dirname + '/**/*.entity.js'],
+  migrations: [__dirname + '/migrations/*.js'],
+  synchronize: false,
 };
 
-console.log('datasource-options1', dataSourceOptions);
+const migrationsDataSourceOptions: DataSourceOptions = {
+  ...appDataSourceOptions,
+  host: configService.getOrThrow('DB_HOST_EXPOSED'),
+  port: configService.getOrThrow('DB_PORT_EXPOSED'),
+};
 
-const dataSource = new DataSource(dataSourceOptions);
+console.log(
+  'datasource-options',
+  appDataSourceOptions,
+  migrationsDataSourceOptions,
+);
+
+const dataSource = new DataSource(migrationsDataSourceOptions);
 
 export default dataSource;
